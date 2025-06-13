@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{book.details}">Book Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<main class="flex-grow-1 d-flex flex-column">
+    <div class="container mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4 text-center">
+
+                <img th:src="${book.coverUrl}" class="img-fluid rounded"
+                     style="max-height: 400px; object-fit: contain;"
+                     alt="Book Cover"
+                     onerror="this.onerror=null;this.src='https://via.placeholder.com/200x300?text=No+Image';">
+            </div>
+            <div class="col-md-8">
+                <h2 th:text="${book.title}">Title</h2>
+                <h5 class="text-muted" th:text="${book.authorFirstName + ' ' + book.authorLastName}">Author</h5>
+                <p><strong th:text="#{global.genre} + ': '">Genre:</strong> <span th:text="${book.genre}">Genre</span></p>
+                <p><strong th:text="#{book.description} + ': '">Description:</strong></p>
+                <div class="mt-3" style="text-align: justify;"
+                     th:utext="${#strings.replace(book.description, '\n', '<br/>')}">
+
+                </div>
+                <br>
+
+                <div class="mt-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-semibold text-uppercase text-primary"
+                              th:text="#{book.available} + ': '">Available Copies:</span>
+                        <span class="fs-6 fw-bold text-dark" th:text="${availableCount}">0</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()"
+                                th:text="#{global.button.back}">Back
+                        </button>
+                        <a th:if="${userStatus == 'ACTIVE'}"
+                           sec:authorize="hasRole('READER')"
+                           th:href="@{'/orders/request/' + ${book.id}}"
+                           class="btn btn-outline-primary"
+                           th:classappend="${hasActiveOrder or availableCount == 0} ? ' disabled' : ''"
+                           th:attr="aria-disabled=${hasActiveOrder or availableCount == 0}"
+                           th:text="#{global.button.request}">
+                            Request this Book
+                        </a>
+                        <a sec:authorize="!isAuthenticated()"
+                           th:href="@{/login}"
+                           class="btn btn-outline-primary"
+                           th:text="#{global.button.request}">
+                            Request this Book
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>
