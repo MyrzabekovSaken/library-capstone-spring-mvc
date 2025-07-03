@@ -1,7 +1,6 @@
-package com.library.app.dao;
+package com.library.app.dao.impl;
 
 import com.library.app.config.ConnectionPool;
-import com.library.app.dao.impl.OrderDaoImpl;
 import com.library.app.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,8 +124,8 @@ class OrderDaoImplTest {
         // When
         Optional<Order> result = testingInstance.findById(ORDER_ID);
         // Then
-        assertTrue(result.isPresent());
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -139,8 +138,8 @@ class OrderDaoImplTest {
         // When
         List<Order> orders = testingInstance.findByUsername(USERNAME);
         // Then
-        assertEquals(1, orders.size());
         verify(preparedStatement).executeQuery();
+        assertEquals(1, orders.size());
     }
 
     @Test
@@ -153,9 +152,9 @@ class OrderDaoImplTest {
         // When
         Optional<String> result = testingInstance.findIssuedOrReserved(ORDER_ID);
         // Then
+        verify(preparedStatement).executeQuery();
         assertTrue(result.isPresent());
         assertEquals(USERNAME, result.get());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
@@ -168,8 +167,8 @@ class OrderDaoImplTest {
         // When
         long result = testingInstance.countOrderStatus(List.of(OrderStatus.ISSUED));
         // Then
-        assertEquals(7L, result);
         verify(preparedStatement).executeQuery();
+        assertEquals(7L, result);
     }
 
     @Test
@@ -186,8 +185,8 @@ class OrderDaoImplTest {
         // When
         List<Object[]> result = testingInstance.findTopRequestedBooks(5);
         // Then
-        assertEquals(1, result.size());
         verify(preparedStatement).executeQuery();
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -202,8 +201,8 @@ class OrderDaoImplTest {
         // When
         List<Object[]> result = testingInstance.findTopActiveUsers(5);
         // Then
-        assertEquals(1, result.size());
         verify(preparedStatement).executeQuery();
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -215,8 +214,8 @@ class OrderDaoImplTest {
         // When
         boolean result = testingInstance.hasActiveOrderForBook(USER_ID, BOOK_ID);
         // Then
-        assertTrue(result);
         verify(preparedStatement).executeQuery();
+        assertTrue(result);
     }
 
     @Test
@@ -229,8 +228,8 @@ class OrderDaoImplTest {
         // When
         List<Order> result = testingInstance.findAllOrders();
         // Then
-        assertEquals(1, result.size());
         verify(preparedStatement).executeQuery();
+        assertEquals(1, result.size());
     }
 
     // NEGATIVE TESTS
@@ -241,8 +240,8 @@ class OrderDaoImplTest {
         Order order = getOrder();
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.save(order));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.save(order));
     }
 
     @Test
@@ -252,8 +251,8 @@ class OrderDaoImplTest {
         order.setId(ORDER_ID);
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.update(order));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.update(order));
     }
 
     @Test
@@ -261,8 +260,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findById(ORDER_ID));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findById(ORDER_ID));
     }
 
     @Test
@@ -270,8 +269,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findByUsername(USERNAME));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findByUsername(USERNAME));
     }
 
     @Test
@@ -279,8 +278,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findIssuedOrReserved(ORDER_ID));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findIssuedOrReserved(ORDER_ID));
     }
 
     @Test
@@ -288,8 +287,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.countOrderStatus(List.of(OrderStatus.ISSUED)));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.countOrderStatus(List.of(OrderStatus.ISSUED)));
     }
 
     @Test
@@ -297,8 +296,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findTopRequestedBooks(5));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findTopRequestedBooks(5));
     }
 
     @Test
@@ -306,8 +305,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findTopActiveUsers(5));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findTopActiveUsers(5));
     }
 
     @Test
@@ -315,8 +314,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.hasActiveOrderForBook(USER_ID, BOOK_ID));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.hasActiveOrderForBook(USER_ID, BOOK_ID));
     }
 
     @Test
@@ -324,8 +323,8 @@ class OrderDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findAllOrders());
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findAllOrders());
     }
 
     private static Order getOrder() {

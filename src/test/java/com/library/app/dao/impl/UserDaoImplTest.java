@@ -1,7 +1,6 @@
-package com.library.app.dao;
+package com.library.app.dao.impl;
 
 import com.library.app.config.ConnectionPool;
-import com.library.app.dao.impl.UserDaoImpl;
 import com.library.app.model.Order;
 import com.library.app.model.OrderStatus;
 import com.library.app.model.Role;
@@ -125,9 +124,9 @@ class UserDaoImplTest {
         // When
         Optional<User> result = testingInstance.findByUsername(JOHN);
         // Then
+        verify(preparedStatement).executeQuery();
         assertTrue(result.isPresent());
         assertEquals(USER_ID, result.get().getId());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
@@ -140,9 +139,9 @@ class UserDaoImplTest {
         // When
         Optional<User> result = testingInstance.findById(USER_ID);
         // Then
+        verify(preparedStatement).executeQuery();
         assertTrue(result.isPresent());
         assertEquals(USER_ID, result.get().getId());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
@@ -155,9 +154,9 @@ class UserDaoImplTest {
         // When
         List<User> result = testingInstance.findAll();
         // Then
+        verify(preparedStatement).executeQuery();
         assertEquals(1, result.size());
         assertEquals(JOHN, result.get(0).getUsername());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
@@ -193,8 +192,8 @@ class UserDaoImplTest {
         // When
         long count = testingInstance.countUserByStatus(STATUS);
         // Then
-        assertEquals(5L, count);
         verify(preparedStatement).executeQuery();
+        assertEquals(5L, count);
     }
 
     @Test
@@ -206,6 +205,7 @@ class UserDaoImplTest {
         // When
         Map<User, List<Order>> result = testingInstance.findReadersWithActiveOrders();
         // Then
+        verify(preparedStatement).executeQuery();
         assertEquals(1, result.size());
         User user = result.keySet().iterator().next();
         assertEquals(JOHN, user.getUsername());
@@ -216,7 +216,6 @@ class UserDaoImplTest {
         assertEquals(OrderStatus.PENDING, orders.get(0).getStatus());
         assertEquals(BOOK_B, orders.get(1).getBookCopy().getBook().getTitle());
         assertEquals(OrderStatus.ISSUED, orders.get(1).getStatus());
-        verify(preparedStatement).executeQuery();
     }
 
     // NEGATIVE TESTS
@@ -230,8 +229,8 @@ class UserDaoImplTest {
         // When
         Optional<User> result = testingInstance.findByUsername(UNKNOWN);
         // Then
-        assertTrue(result.isEmpty());
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -240,8 +239,8 @@ class UserDaoImplTest {
         User user = getUser();
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DB_ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.save(user));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.save(user));
     }
 
     @Test
@@ -249,8 +248,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DB_ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findByUsername(JOHN));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findByUsername(JOHN));
     }
 
     @Test
@@ -258,8 +257,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DB_ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findById(USER_ID));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findById(USER_ID));
     }
 
     @Test
@@ -267,8 +266,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DB_ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findAll());
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findAll());
     }
 
     @Test
@@ -277,8 +276,8 @@ class UserDaoImplTest {
         User user = getUser();
         when(connection.prepareStatement(any())).thenThrow(new SQLException(UPDATE_FAILED));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.update(user));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.update(user));
     }
 
     @Test
@@ -286,8 +285,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DELETE_FAILED));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.delete(USER_ID));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.delete(USER_ID));
     }
 
     @Test
@@ -295,8 +294,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(COUNT_FAILED));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.countUserByStatus(STATUS));
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.countUserByStatus(STATUS));
     }
 
     @Test
@@ -304,8 +303,8 @@ class UserDaoImplTest {
         // Given
         when(connection.prepareStatement(any())).thenThrow(new SQLException(DB_ERROR));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.findReadersWithActiveOrders());
         verify(connection).prepareStatement(any());
+        assertThrows(RuntimeException.class, () -> testingInstance.findReadersWithActiveOrders());
     }
 
     private User getUser() {

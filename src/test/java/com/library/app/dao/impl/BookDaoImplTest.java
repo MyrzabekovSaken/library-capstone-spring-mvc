@@ -1,7 +1,6 @@
-package com.library.app.dao;
+package com.library.app.dao.impl;
 
 import com.library.app.config.ConnectionPool;
-import com.library.app.dao.impl.BookDaoImpl;
 import com.library.app.model.Book;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,10 +90,10 @@ class BookDaoImplTest {
         // When
         List<Book> result = testingInstance.search(TITLE, JOSHUA, GENRE);
         // Then
-        assertEquals(1, result.size());
-        assertEquals(TITLE, result.get(0).getTitle());
         verify(connection).prepareStatement(anyString());
         verify(preparedStatement).executeQuery();
+        assertEquals(1, result.size());
+        assertEquals(TITLE, result.get(0).getTitle());
     }
 
     @Test
@@ -107,10 +106,10 @@ class BookDaoImplTest {
         // When
         Optional<Book> result = testingInstance.findById(BOOK_ID);
         // Then
-        assertTrue(result.isPresent());
-        assertEquals(BOOK_ID, result.get().getId());
         verify(connection).prepareStatement(any());
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isPresent());
+        assertEquals(BOOK_ID, result.get().getId());
     }
 
     @Test
@@ -172,9 +171,9 @@ class BookDaoImplTest {
         // When
         long result = testingInstance.count();
         // Then
-        assertEquals(5L, result);
         verify(connection).prepareStatement(any());
         verify(preparedStatement).executeQuery();
+        assertEquals(5L, result);
     }
 
     @Test
@@ -186,9 +185,9 @@ class BookDaoImplTest {
         // When
         long result = testingInstance.count();
         // Then
-        assertEquals(0L, result);
         verify(connection).prepareStatement(any());
         verify(preparedStatement).executeQuery();
+        assertEquals(0L, result);
     }
 
     // NEGATIVE TESTS
@@ -212,9 +211,9 @@ class BookDaoImplTest {
         // When
         Optional<Book> result = testingInstance.findById(BOOK_ID);
         // Then
-        assertTrue(result.isEmpty());
         verify(connection).prepareStatement(any());
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isEmpty());
     }
 
     @Test

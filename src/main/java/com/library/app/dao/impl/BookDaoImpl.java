@@ -56,7 +56,6 @@ public class BookDaoImpl implements BookDao {
                 WHERE id = ?
             """;
     private static final Logger logger = LoggerFactory.getLogger(BookDaoImpl.class);
-
     private final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
     /**

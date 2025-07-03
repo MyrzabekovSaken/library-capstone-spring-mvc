@@ -1,4 +1,4 @@
-package com.library.app.service;
+package com.library.app.service.impl;
 
 import com.library.app.dao.BookCopyDao;
 import com.library.app.dao.OrderDao;
@@ -6,7 +6,6 @@ import com.library.app.dao.UserDao;
 import com.library.app.dto.BookStatsDto;
 import com.library.app.dto.UserStatsDto;
 import com.library.app.model.*;
-import com.library.app.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -75,11 +74,11 @@ class OrderServiceImplTest {
         // When
         testingInstance.createOrder(BOOK_ID, USERNAME, OrderType.HOME);
         // Then
-        assertEquals(CopyStatus.RESERVED, copy.getStatus());
         verify(userDao).findByUsername(USERNAME);
         verify(bookCopyDao).findAvailableCopy(BOOK_ID);
         verify(orderDao).save(any(Order.class));
         verify(bookCopyDao).update(copy);
+        assertEquals(CopyStatus.RESERVED, copy.getStatus());
     }
 
     @Test
@@ -124,8 +123,8 @@ class OrderServiceImplTest {
         // When
         List<Order> result = testingInstance.getOrdersByUsername(USERNAME);
         // Then
-        assertEquals(orders, result);
         verify(orderDao).findByUsername(USERNAME);
+        assertEquals(orders, result);
     }
 
     @Test
@@ -135,9 +134,9 @@ class OrderServiceImplTest {
         // When
         Optional<String> result = testingInstance.getIssuedOrReserved(COPY_ID);
         // Then
+        verify(orderDao).findIssuedOrReserved(COPY_ID);
         assertTrue(result.isPresent());
         assertEquals(RESERVED, result.get());
-        verify(orderDao).findIssuedOrReserved(COPY_ID);
     }
 
     @Test
@@ -148,8 +147,8 @@ class OrderServiceImplTest {
         // When
         long result = testingInstance.getCountByStatuses(statuses);
         // Then
-        assertEquals(7L, result);
         verify(orderDao).countOrderStatus(statuses);
+        assertEquals(7L, result);
     }
 
     @Test
@@ -166,11 +165,11 @@ class OrderServiceImplTest {
         // When
         List<BookStatsDto> result = testingInstance.getTopRequestedBooks(3);
         // Then
+        verify(orderDao).findTopRequestedBooks(3);
         assertEquals(1, result.size());
         assertEquals(BOOK_TITLE, result.get(0).getTitle());
         assertEquals(JOHN_DOE, result.get(0).getAuthorFullName());
         assertEquals(7L, result.get(0).getRequestCount());
-        verify(orderDao).findTopRequestedBooks(3);
     }
 
     @Test
@@ -185,10 +184,10 @@ class OrderServiceImplTest {
         // When
         List<UserStatsDto> result = testingInstance.getTopActiveUsers(2);
         // Then
+        verify(orderDao).findTopActiveUsers(2);
         assertEquals(1, result.size());
         assertEquals(USER_1, result.get(0).getUsername());
         assertEquals(10L, result.get(0).getRequestCount());
-        verify(orderDao).findTopActiveUsers(2);
     }
 
     @Test
@@ -198,8 +197,8 @@ class OrderServiceImplTest {
         // When
         boolean result = testingInstance.getActiveOrderForBook(BOOK_ID, USER_ID);
         // Then
-        assertTrue(result);
         verify(orderDao).hasActiveOrderForBook(BOOK_ID, USER_ID);
+        assertTrue(result);
     }
 
     @Test
@@ -213,12 +212,12 @@ class OrderServiceImplTest {
         // When
         testingInstance.cancelOrder(ORDER_ID, USERNAME);
         // Then
-        assertEquals(OrderStatus.CANCELED, order.getStatus());
-        assertNull(order.getDueDate());
-        assertEquals(CopyStatus.AVAILABLE, copy.getStatus());
         verify(orderDao).update(order);
         verify(orderDao).findById(ORDER_ID);
         verify(bookCopyDao).update(copy);
+        assertEquals(OrderStatus.CANCELED, order.getStatus());
+        assertNull(order.getDueDate());
+        assertEquals(CopyStatus.AVAILABLE, copy.getStatus());
     }
 
     @Test
@@ -232,12 +231,12 @@ class OrderServiceImplTest {
         // When
         testingInstance.confirmOrderIssue(ORDER_ID, dueDate);
         // Then
-        assertEquals(OrderStatus.ISSUED, order.getStatus());
-        assertEquals(dueDate, order.getDueDate());
-        assertEquals(CopyStatus.ISSUED, copy.getStatus());
         verify(orderDao).findById(ORDER_ID);
         verify(orderDao).update(order);
         verify(bookCopyDao).update(copy);
+        assertEquals(OrderStatus.ISSUED, order.getStatus());
+        assertEquals(dueDate, order.getDueDate());
+        assertEquals(CopyStatus.ISSUED, copy.getStatus());
     }
 
     @Test
@@ -250,12 +249,12 @@ class OrderServiceImplTest {
         // When
         testingInstance.markAsReturned(ORDER_ID);
         // Then
-        assertEquals(OrderStatus.RETURNED, order.getStatus());
-        assertEquals(LocalDate.now(), order.getReturnDate());
-        assertEquals(CopyStatus.AVAILABLE, copy.getStatus());
         verify(orderDao).findById(ORDER_ID);
         verify(orderDao).update(order);
         verify(bookCopyDao).update(copy);
+        assertEquals(OrderStatus.RETURNED, order.getStatus());
+        assertEquals(LocalDate.now(), order.getReturnDate());
+        assertEquals(CopyStatus.AVAILABLE, copy.getStatus());
     }
 
     @Test
@@ -267,8 +266,8 @@ class OrderServiceImplTest {
         // When
         List<Order> result = testingInstance.getAllOrders();
         // Then
-        assertEquals(expectedOrders, result);
         verify(orderDao).findAllOrders();
+        assertEquals(expectedOrders, result);
     }
 
     // NEGATIVE TESTS
@@ -280,8 +279,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.createOrder(BOOK_ID, USERNAME, OrderType.HOME));
-        assertEquals(USER_NOT_FOUND, exception.getMessage());
         verify(userDao).findByUsername(USERNAME);
+        assertEquals(USER_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -293,9 +292,9 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.createOrder(BOOK_ID, USERNAME, OrderType.HOME));
-        assertEquals(NO_AVAILABLE_COPIES, exception.getMessage());
         verify(userDao).findByUsername(USERNAME);
         verify(bookCopyDao).findAvailableCopy(BOOK_ID);
+        assertEquals(NO_AVAILABLE_COPIES, exception.getMessage());
     }
 
     @Test
@@ -308,9 +307,9 @@ class OrderServiceImplTest {
         // Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 testingInstance.createOrder(BOOK_ID, USERNAME, null));
-        assertEquals(ORDER_TYPE_MUST_NOT_BE_NULL, exception.getMessage());
         verify(userDao).findByUsername(USERNAME);
         verify(bookCopyDao).findAvailableCopy(BOOK_ID);
+        assertEquals(ORDER_TYPE_MUST_NOT_BE_NULL, exception.getMessage());
     }
 
     @Test
@@ -320,8 +319,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.cancelOrder(ORDER_ID, USERNAME));
-        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -335,8 +334,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.cancelOrder(ORDER_ID, USERNAME));
-        assertEquals(UNAUTHORIZED_TO_CANCEL_THIS_ORDER, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(UNAUTHORIZED_TO_CANCEL_THIS_ORDER, exception.getMessage());
     }
 
     @Test
@@ -349,8 +348,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.cancelOrder(ORDER_ID, USERNAME));
-        assertEquals(ONLY_PENDING_ORDERS_CAN_BE_CANCELED, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ONLY_PENDING_ORDERS_CAN_BE_CANCELED, exception.getMessage());
     }
 
     @Test
@@ -360,8 +359,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.confirmOrderIssue(ORDER_ID, LocalDate.now()));
-        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -373,8 +372,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.confirmOrderIssue(ORDER_ID, LocalDate.now()));
-        assertEquals(ORDER_IS_NOT_IN_PENDING_STATUS, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ORDER_IS_NOT_IN_PENDING_STATUS, exception.getMessage());
     }
 
     @Test
@@ -384,8 +383,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.markAsReturned(ORDER_ID));
-        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ORDER_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -397,8 +396,8 @@ class OrderServiceImplTest {
         // Then
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 testingInstance.markAsReturned(ORDER_ID));
-        assertEquals(ONLY_ISSUED_ORDERS_CAN_BE_RETURNED, exception.getMessage());
         verify(orderDao).findById(ORDER_ID);
+        assertEquals(ONLY_ISSUED_ORDERS_CAN_BE_RETURNED, exception.getMessage());
     }
 
 
@@ -406,6 +405,7 @@ class OrderServiceImplTest {
         User user = new User();
         user.setId(USER_ID);
         user.setUsername(USERNAME);
+
         return user;
     }
 

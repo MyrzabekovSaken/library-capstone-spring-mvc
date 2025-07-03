@@ -1,9 +1,8 @@
-package com.library.app.service;
+package com.library.app.service.impl;
 
 import com.library.app.dao.BookCopyDao;
 import com.library.app.model.BookCopy;
 import com.library.app.model.CopyStatus;
-import com.library.app.service.impl.BookCopyServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,8 +46,8 @@ class BookCopyServiceImplTest {
         // When
         int result = testingInstance.getAvailableCopiesCount(BOOK_ID);
         // Then
-        assertEquals(3, result);
         verify(bookCopyDao).countAvailableCopies(BOOK_ID);
+        assertEquals(3, result);
     }
 
     @Test
@@ -59,8 +58,8 @@ class BookCopyServiceImplTest {
         // When
         List<BookCopy> actual = testingInstance.getAllByBookId(BOOK_ID);
         // Then
-        assertEquals(expected, actual);
         verify(bookCopyDao).findAllByBookId(BOOK_ID);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -71,9 +70,9 @@ class BookCopyServiceImplTest {
         // When
         Optional<BookCopy> result = testingInstance.getById(COPY_ID);
         // Then
+        verify(bookCopyDao).findById(COPY_ID);
         assertTrue(result.isPresent());
         assertEquals(copy, result.get());
-        verify(bookCopyDao).findById(COPY_ID);
     }
 
     @Test
@@ -83,8 +82,8 @@ class BookCopyServiceImplTest {
         // When
         String result = testingInstance.generateNextInventoryNumber(BOOK_ID);
         // Then
-        assertEquals(INV_0008, result);
         verify(bookCopyDao).findLastInventoryNumber(BOOK_ID);
+        assertEquals(INV_0008, result);
     }
 
     @Test
@@ -94,8 +93,8 @@ class BookCopyServiceImplTest {
         // When
         String result = testingInstance.generateNextInventoryNumber(BOOK_ID);
         // Then
-        assertEquals(INV_0001, result);
         verify(bookCopyDao).findLastInventoryNumber(BOOK_ID);
+        assertEquals(INV_0001, result);
     }
 
     @Test
@@ -105,8 +104,8 @@ class BookCopyServiceImplTest {
         // When
         long result = testingInstance.countAll();
         // Then
-        assertEquals(FORTY_TWO_LONG, result);
         verify(bookCopyDao).countAllBookCopy();
+        assertEquals(FORTY_TWO_LONG, result);
     }
 
     @Test
@@ -116,8 +115,8 @@ class BookCopyServiceImplTest {
         // When
         long result = testingInstance.countByStatus(CopyStatus.ISSUED);
         // Then
-        assertEquals(FIVE_LONG, result);
         verify(bookCopyDao).countBookCopyStatus(CopyStatus.ISSUED);
+        assertEquals(FIVE_LONG, result);
     }
 
     @Test
@@ -157,8 +156,8 @@ class BookCopyServiceImplTest {
         // When
         Optional<BookCopy> result = testingInstance.getById(COPY_ID);
         // Then
-        assertTrue(result.isEmpty());
         verify(bookCopyDao).findById(COPY_ID);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -168,8 +167,8 @@ class BookCopyServiceImplTest {
         // When
         String result = testingInstance.generateNextInventoryNumber(BOOK_ID);
         // Then
-        assertEquals(INV_0001, result);
         verify(bookCopyDao).findLastInventoryNumber(BOOK_ID);
+        assertEquals(INV_0001, result);
     }
 
     @Test
@@ -178,8 +177,8 @@ class BookCopyServiceImplTest {
         BookCopy copy = getCopy();
         doThrow(new RuntimeException(DB_ERROR)).when(bookCopyDao).save(copy);
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.saveBook(copy));
         verify(bookCopyDao).save(copy);
+        assertThrows(RuntimeException.class, () -> testingInstance.saveBook(copy));
     }
 
     @Test
@@ -187,8 +186,8 @@ class BookCopyServiceImplTest {
         // Given
         doThrow(new RuntimeException(DB_ERROR)).when(bookCopyDao).delete(COPY_ID);
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.deleteBook(COPY_ID));
         verify(bookCopyDao).delete(COPY_ID);
+        assertThrows(RuntimeException.class, () -> testingInstance.deleteBook(COPY_ID));
     }
 
     @Test

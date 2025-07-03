@@ -1,7 +1,7 @@
-package com.library.app.dao;
+package com.library.app.dao.impl;
 
 import com.library.app.config.ConnectionPool;
-import com.library.app.dao.impl.BookCopyDaoImpl;
+import com.library.app.dao.BookDao;
 import com.library.app.model.Book;
 import com.library.app.model.BookCopy;
 import com.library.app.model.CopyStatus;
@@ -23,8 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,31 +85,31 @@ class BookCopyDaoImplTest {
         // Given
         prepareResultSetForCopy(INV_0001, BOOK_ID_LONG, AVAILABLE);
         when(resultSet.next()).thenReturn(true);
-        Book book = new Book();
-        book.setId(BOOK_ID_LONG);
-        when(bookDao.findById(BOOK_ID_LONG)).thenReturn(Optional.of(book));
+        Book expectedBook = new Book();
+        expectedBook.setId(BOOK_ID_LONG);
+        when(bookDao.findById(BOOK_ID_LONG)).thenReturn(Optional.of(expectedBook));
         // When
         Optional<BookCopy> result = testingInstance.findById(COPY_ID);
         // Then
+        verify(preparedStatement).executeQuery();
         assertTrue(result.isPresent());
         assertEquals(COPY_ID, result.get().getId());
         assertEquals(CopyStatus.AVAILABLE, result.get().getStatus());
         assertEquals(INV_0001, result.get().getInventoryNumber());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
     void shouldCountAvailableCopies() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
         when(resultSet.getInt(1)).thenReturn(3);
         // When
         int result = testingInstance.countAvailableCopies(BOOK_ID_LONG);
         // Then
-        assertEquals(3, result);
         verify(preparedStatement).executeQuery();
+        assertEquals(3, result);
     }
 
     @Test
@@ -124,15 +123,15 @@ class BookCopyDaoImplTest {
         // When
         Optional<BookCopy> result = testingInstance.findAvailableCopy(BOOK_ID_LONG);
         // Then
+        verify(preparedStatement).executeQuery();
         assertTrue(result.isPresent());
         assertEquals(INV_0002, result.get().getInventoryNumber());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
     void shouldFindAllByBookId() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true, true, false);
         when(resultSet.getLong(ID)).thenReturn(1L, 2L);
@@ -145,9 +144,9 @@ class BookCopyDaoImplTest {
         // When
         List<BookCopy> result = testingInstance.findAllByBookId(BOOK_ID_LONG);
         // Then
+        verify(preparedStatement).executeQuery();
         assertEquals(2, result.size());
         assertEquals(INV_0001, result.get(0).getInventoryNumber());
-        verify(preparedStatement).executeQuery();
     }
 
     @Test
@@ -162,7 +161,7 @@ class BookCopyDaoImplTest {
                         null,
                         null),
                 CopyStatus.AVAILABLE);
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         // When
         testingInstance.save(copy);
         // Then
@@ -176,7 +175,7 @@ class BookCopyDaoImplTest {
     void shouldUpdateStatement() throws Exception {
         // Given
         BookCopy copy = new BookCopy(COPY_ID, INV_9999, null, CopyStatus.ISSUED);
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         // When
         testingInstance.update(copy);
         // Then
@@ -189,7 +188,7 @@ class BookCopyDaoImplTest {
     @Test
     void shouldDeleteStatement() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         // When
         testingInstance.delete(COPY_ID);
         // Then
@@ -207,10 +206,10 @@ class BookCopyDaoImplTest {
         // When
         Optional<String> result = testingInstance.findLastInventoryNumber(BOOK_ID_LONG);
         // Then
-        assertTrue(result.isPresent());
-        assertEquals(INV_0001, result.get());
         verify(preparedStatement).setLong(1, BOOK_ID_LONG);
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isPresent());
+        assertEquals(INV_0001, result.get());
     }
 
     @Test
@@ -223,8 +222,8 @@ class BookCopyDaoImplTest {
         // When
         long result = testingInstance.countAllBookCopy();
         // Then
-        assertEquals(42L, result);
         verify(preparedStatement).executeQuery();
+        assertEquals(42L, result);
     }
 
     @Test
@@ -237,9 +236,9 @@ class BookCopyDaoImplTest {
         // When
         long result = testingInstance.countBookCopyStatus(CopyStatus.AVAILABLE);
         // Then
-        assertEquals(5L, result);
         verify(preparedStatement).setString(1, AVAILABLE);
         verify(preparedStatement).executeQuery();
+        assertEquals(5L, result);
     }
 
     // NEGATIVE TESTS
@@ -247,20 +246,20 @@ class BookCopyDaoImplTest {
     @Test
     void shouldNotFindByIdWhenNoResult() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
         // When
         Optional<BookCopy> result = testingInstance.findById(COPY_ID);
         // Then
-        assertTrue(result.isEmpty());
         verify(preparedStatement).executeQuery();
+        assertTrue(result.isEmpty());
     }
 
     @Test
     void shouldNotFindByIdWhenException() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenThrow(new SQLException());
+        when(connection.prepareStatement(anyString())).thenThrow(new SQLException());
         // When
         Optional<BookCopy> result = testingInstance.findById(COPY_ID);
         // Then
@@ -270,7 +269,7 @@ class BookCopyDaoImplTest {
     @Test
     void shouldNotCountAvailableCopiesWhenException() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenThrow(new SQLException());
+        when(connection.prepareStatement(anyString())).thenThrow(new SQLException());
         // When
         int result = testingInstance.countAvailableCopies(BOOK_ID_LONG);
         // Then
@@ -280,15 +279,15 @@ class BookCopyDaoImplTest {
     @Test
     void shouldNotFindAvailableCopyWhenNoCopy() throws Exception {
         // Given
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
         // When
         Optional<BookCopy> result = testingInstance.findAvailableCopy(BOOK_ID_LONG);
         // Then
-        assertTrue(result.isEmpty());
         verify(preparedStatement).executeQuery();
         verify(resultSet).next();
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -303,7 +302,7 @@ class BookCopyDaoImplTest {
                         null,
                         null),
                 CopyStatus.RESERVED);
-        when(connection.prepareStatement(any())).thenThrow(new SQLException());
+        when(connection.prepareStatement(anyString())).thenThrow(new SQLException());
         // Then
         assertThrows(RuntimeException.class, () -> testingInstance.save(copy));
     }
@@ -317,8 +316,8 @@ class BookCopyDaoImplTest {
         // When
         Optional<String> result = testingInstance.findLastInventoryNumber(BOOK_ID_LONG);
         // Then
-        assertTrue(result.isEmpty());
         verify(preparedStatement).setLong(1, BOOK_ID_LONG);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -340,8 +339,8 @@ class BookCopyDaoImplTest {
         // When
         long result = testingInstance.countAllBookCopy();
         // Then
-        assertEquals(0L, result);
         verify(preparedStatement).executeQuery();
+        assertEquals(0L, result);
     }
 
     @Test
@@ -363,8 +362,8 @@ class BookCopyDaoImplTest {
         // When
         long result = testingInstance.countBookCopyStatus(CopyStatus.ISSUED);
         // Then
-        assertEquals(0L, result);
         verify(preparedStatement).setString(1, ISSUED);
+        assertEquals(0L, result);
     }
 
     @Test
@@ -379,7 +378,7 @@ class BookCopyDaoImplTest {
 
     private void prepareResultSetForCopy(String inventoryNumberValue, Long bookIdValue, String statusValue)
             throws SQLException {
-        when(connection.prepareStatement(any())).thenReturn(preparedStatement);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.getLong(ID)).thenReturn(COPY_ID);
         when(resultSet.getString(INVENTORY_NUMBER)).thenReturn(inventoryNumberValue);

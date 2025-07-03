@@ -44,6 +44,7 @@ public class BookCopyDaoImpl implements BookCopyDao {
     private static final String FAILED_TO_SAVE_BOOK_COPY = "Failed to save book copy";
     private static final String FAILED_TO_DELETE_BOOK_COPY = "Failed to delete book copy";
     private static final String DELETE_BOOK_COPY_BY_ID = "DELETE FROM book_copies WHERE id = ?";
+    private static final String DATABASE_ERROR_WHILE_UPDATING_BOOK_COPY = "Database error while updating book copy";
     private static final String UPDATE_BOOK_COPY_INV_NUMBER_AND_STATUS_BY_ID =
             "UPDATE book_copies SET inventory_number = ?, status = ? WHERE id = ?";
     private static final String COUNT_AVAILABLE_BOOK_COPIES_BY_BOOK_ID =
@@ -73,7 +74,6 @@ public class BookCopyDaoImpl implements BookCopyDao {
                 LIMIT 1
             """;
     private static final Logger logger = LoggerFactory.getLogger(BookCopyDaoImpl.class);
-
     private final ConnectionPool connectionPool = ConnectionPool.getInstance();
     private final BookDao bookDao;
 
@@ -293,6 +293,7 @@ public class BookCopyDaoImpl implements BookCopyDao {
             }
         } catch (SQLException e) {
             logger.error(ERROR_WHILE_UPDATING_BOOK_COPY_WITH_ID, copy.getId(), e);
+            throw new RuntimeException(DATABASE_ERROR_WHILE_UPDATING_BOOK_COPY, e);
         } finally {
             connectionPool.closeConnection(connection);
         }

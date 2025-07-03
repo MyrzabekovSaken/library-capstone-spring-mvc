@@ -48,14 +48,14 @@ public class UserDaoImpl implements UserDao {
             "Database error while finding all users with role";
     private static final String ERROR_UPDATING_USER_WITH_ID = "Error updating user with id={}";
     private static final String DATABASE_ERROR_WHILE_UPDATING_USER = "Database error while updating user";
-    private static final String ERROR_DELETING_USER_WITH_ID = "Error deleting user with id {}";
-    private static final String DATABASE_ERROR_WHILE_DELETING_USER = "Database error while deleting user";
+    private static final String ERROR_DELETING_USER_WITH_ID = "Error soft deleting user with id {}";
+    private static final String DATABASE_ERROR_WHILE_DELETING_USER = "Database error while soft deleting user";
     private static final String ERROR_FINDING_USER_BY_ID = "Error finding user by ID: {}";
     private static final String DATABASE_ERROR_WHILE_FINDING_USER_BY_ID = "Database error while finding user by id";
     private static final String ROLE_NOT_FOUND = "Role not found: {}";
     private static final String ROLE_NOT_FOUND_EXCEPTION = "Role not found %s";
     private static final String ERROR_RETRIEVING_ROLE_ID_FOR_ROLE = "Error retrieving role ID for role={}";
-    private static final String DELETE_USER_BY_ID = "DELETE FROM users WHERE id = ?";
+    private static final String SOFT_DELETE_USER_BY_ID = "UPDATE users SET status = 'DELETED' WHERE id = ?";
     private static final String COUNT_USERS_BY_STATUS = "SELECT COUNT(*) FROM users WHERE status = ?";
     private static final String SELECT_ROLE_ID_BY_NAME = "SELECT id FROM roles WHERE name = ?";
     private static final String INSERT_NEW_USER =
@@ -85,6 +85,7 @@ public class UserDaoImpl implements UserDao {
             FROM users u
             JOIN roles r
             ON u.role_id = r.id
+            WHERE u.status != 'DELETED'
             ORDER BY id""";
     private static final String SELECT_USER_WITH_ROLE_BY_ID = """
                 SELECT u.*, r.name AS role_name
@@ -94,7 +95,6 @@ public class UserDaoImpl implements UserDao {
                 WHERE u.id = ?
             """;
     private static final Logger logger = LoggerFactory.getLogger(UserDaoImpl.class);
-
     private final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
     /**
@@ -346,7 +346,7 @@ public class UserDaoImpl implements UserDao {
         try {
             connection = connectionPool.getConnection();
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_BY_ID)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SOFT_DELETE_USER_BY_ID)) {
                 preparedStatement.setLong(1, id);
                 preparedStatement.executeUpdate();
             }

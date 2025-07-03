@@ -81,6 +81,7 @@ public class AdminController {
     private static final String BOOK_ADD_SUCCESS = "book.add.success";
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     private static final String BOOK_COPY_CANNOT_DELETE = "book.copy.cannotDelete";
+    private static final String BOOK_COPY_CANNOT_EDIT = "book.copy.cannotEdit";
 
     private final UserService userService;
     private final BookService bookService;
@@ -464,7 +465,7 @@ public class AdminController {
      */
     @PostMapping("/books/copies/edit/{copyId}")
     public String updateCopy(@PathVariable(COPY_ID) Long copyId,
-                             @ModelAttribute(COPY) BookCopyDto bookCopyDto,
+                             @ModelAttribute(COPY) BookCopyDto bookCopyDto, Model model,
                              RedirectAttributes redirectAttributes, Locale locale) {
         Optional<BookDto> optionalBook = bookService.getById(bookCopyDto.getBookId());
 
@@ -477,12 +478,13 @@ public class AdminController {
 
         Optional<String> status = orderService.getIssuedOrReserved(copyId);
         if (status.isPresent()) {
-            String error = messageSource.getMessage("book.copy.cannotEdit", new Object[]{status.get()}, locale);
+            String error = messageSource.getMessage(BOOK_COPY_CANNOT_EDIT, new Object[]{status.get()}, locale);
             redirectAttributes.addFlashAttribute(ERROR, error);
 
             return String.format("redirect:/admin/books/%s", bookCopyDto.getBookId());
         }
 
+        BookDto bookDto = optionalBook.get();
         BookCopy bookCopy = new BookCopy();
         bookCopy.setId(copyId);
         bookCopy.setInventoryNumber(bookCopyDto.getInventoryNumber());
@@ -492,11 +494,30 @@ public class AdminController {
         book.setId(bookCopyDto.getBookId());
         bookCopy.setBook(book);
 
-        bookCopyService.update(bookCopy);
-        String message = messageSource.getMessage(COPY_UPDATE_SUCCESS, null, locale);
-        redirectAttributes.addFlashAttribute(MESSAGE, message);
+        try {
+            bookCopyService.update(bookCopy);
+            String message = messageSource.getMessage(COPY_UPDATE_SUCCESS, null, locale);
+            redirectAttributes.addFlashAttribute(MESSAGE, message);
 
-        return String.format("redirect:/admin/books/%s", bookCopyDto.getBookId());
+            return String.format("redirect:/admin/books/%s", bookCopyDto.getBookId());
+        } catch (RuntimeException e) {
+            Throwable cause = e.getCause();
+
+            model.addAttribute(COPY, bookCopyDto);
+            model.addAttribute(BOOK, bookDto);
+
+            if (cause instanceof SQLException sqlEx && SQL_STATE_23505.equals(sqlEx.getSQLState())) {
+                logger.warn(DUPLICATE_INVENTORY_NUMBER, bookCopyDto.getInventoryNumber());
+                String duplicateMessage = messageSource.getMessage(COPY_ADD_DUPLICATE, null, locale);
+                model.addAttribute(ERROR, duplicateMessage);
+            } else {
+                logger.error(UNEXPECTED_ERROR, e);
+                String unexpectedError = messageSource.getMessage(ERROR_UNEXPECTED, null, locale);
+                model.addAttribute(ERROR, unexpectedError);
+            }
+        }
+
+        return "admin/book-copy-form";
     }
 
     /**

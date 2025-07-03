@@ -23,14 +23,12 @@ public class WebAppInitializer implements WebApplicationInitializer {
                 HIDDEN_HTTP_METHOD_FILTER, new HiddenHttpMethodFilter());
         hidden.addMappingForUrlPatterns(null, true, PATH_ALL);
 
-        AnnotationConfigWebApplicationContext context =
-                new AnnotationConfigWebApplicationContext();
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.register(WebAppConfig.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
 
-        ServletRegistration.Dynamic registration =
-                servletContext.addServlet(DISPATCHER, dispatcherServlet);
+        ServletRegistration.Dynamic registration = servletContext.addServlet(DISPATCHER, dispatcherServlet);
         registration.setLoadOnStartup(1);
         registration.addMapping(PATH);
 

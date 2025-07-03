@@ -1,9 +1,8 @@
-package com.library.app.service;
+package com.library.app.service.impl;
 
 import com.library.app.dao.BookDao;
 import com.library.app.dto.BookDto;
 import com.library.app.model.Book;
-import com.library.app.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,9 +48,9 @@ class BookServiceImplTest {
         // When
         List<BookDto> result = testingInstance.search(TITLE, AUTHOR_FIRST_NAME, GENRE);
         // Then
+        verify(bookDao).search(TITLE, AUTHOR_FIRST_NAME, GENRE);
         assertEquals(1, result.size());
         assertEquals(BOOK_ID, result.get(0).getId());
-        verify(bookDao).search(TITLE, AUTHOR_FIRST_NAME, GENRE);
     }
 
     @Test
@@ -62,9 +61,9 @@ class BookServiceImplTest {
         // When
         Optional<BookDto> result = testingInstance.getById(BOOK_ID);
         // Then
+        verify(bookDao).findById(BOOK_ID);
         assertTrue(result.isPresent());
         assertEquals(BOOK_ID, result.get().getId());
-        verify(bookDao).findById(BOOK_ID);
     }
 
     @Test
@@ -104,8 +103,8 @@ class BookServiceImplTest {
         // When
         long result = testingInstance.countBooks();
         // Then
-        assertEquals(TEN_LONG, result);
         verify(bookDao).count();
+        assertEquals(TEN_LONG, result);
     }
 
     // NEGATIVE TESTS
@@ -140,8 +139,8 @@ class BookServiceImplTest {
         dto.setTitle(TITLE);
         doThrow(new RuntimeException(DB_ERROR)).when(bookDao).save(any(Book.class));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.saveBook(dto));
         verify(bookDao).save(any(Book.class));
+        assertThrows(RuntimeException.class, () -> testingInstance.saveBook(dto));
     }
 
     @Test
@@ -151,8 +150,8 @@ class BookServiceImplTest {
         dto.setTitle(TITLE);
         doThrow(new RuntimeException(DB_ERROR)).when(bookDao).update(any(Book.class));
         // Then
-        assertThrows(RuntimeException.class, () -> testingInstance.updateBook(dto));
         verify(bookDao).update(any(Book.class));
+        assertThrows(RuntimeException.class, () -> testingInstance.updateBook(dto));
     }
 
     @Test
@@ -162,8 +161,8 @@ class BookServiceImplTest {
         // When
         List<BookDto> result = testingInstance.search(TITLE, AUTHOR_FIRST_NAME, GENRE);
         // Then
-        assertTrue(result.isEmpty());
         verify(bookDao).search(TITLE, AUTHOR_FIRST_NAME, GENRE);
+        assertTrue(result.isEmpty());
     }
 
     private static Book getBook() {

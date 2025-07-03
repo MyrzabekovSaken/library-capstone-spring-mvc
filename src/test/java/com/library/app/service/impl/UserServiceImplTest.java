@@ -1,11 +1,10 @@
-package com.library.app.service;
+package com.library.app.service.impl;
 
 import com.library.app.dao.UserDao;
 import com.library.app.dto.UserDto;
 import com.library.app.model.Order;
 import com.library.app.model.Role;
 import com.library.app.model.User;
-import com.library.app.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -78,10 +77,10 @@ class UserServiceImplTest {
         testingInstance.register(user);
         // Then
         verify(userDao).save(user);
+        verify(passwordEncoder).encode(PASSWORD);
         assertEquals(ENCODED_PASSWORD, user.getPassword());
         assertEquals(Role.READER, user.getRole());
         assertEquals(ACTIVE, user.getStatus());
-        verify(passwordEncoder).encode(PASSWORD);
     }
 
     @Test
@@ -95,11 +94,11 @@ class UserServiceImplTest {
         // When
         testingInstance.updateUser(userDto, PASSWORD);
         // Then
+        verify(userDao).update(user);
         assertEquals(NEW_MAIL_COM, user.getEmail());
         assertEquals(Role.ADMIN, user.getRole());
         assertEquals(BLOCKED, user.getStatus());
         assertEquals(ENCODED_PASSWORD, user.getPassword());
-        verify(userDao).update(user);
     }
 
     @Test
@@ -112,8 +111,8 @@ class UserServiceImplTest {
         // When
         testingInstance.updateUser(userDto, SPACES);
         // Then
-        assertEquals(OLD_PASS, user.getPassword());
         verify(userDao).update(user);
+        assertEquals(OLD_PASS, user.getPassword());
     }
 
     @Test
@@ -124,8 +123,8 @@ class UserServiceImplTest {
         // When
         User result = testingInstance.getUsername(USERNAME);
         // Then
-        assertEquals(user, result);
         verify(userDao).findByUsername(USERNAME);
+        assertEquals(user, result);
     }
 
     @Test
@@ -136,8 +135,8 @@ class UserServiceImplTest {
         // When
         Optional<User> result = testingInstance.getById(USER_ID);
         // Then
-        assertTrue(result.isPresent());
         verify(userDao).findById(USER_ID);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -155,8 +154,8 @@ class UserServiceImplTest {
         // When
         long count = testingInstance.countByStatus(BLOCKED);
         // Then
-        assertEquals(3L, count);
         verify(userDao).countUserByStatus(BLOCKED);
+        assertEquals(3L, count);
     }
 
     @Test
@@ -167,9 +166,9 @@ class UserServiceImplTest {
         // When
         List<UserDto> result = testingInstance.getAllUserDtos();
         // Then
+        verify(userDao).findAll();
         assertEquals(1, result.size());
         assertEquals(USER_ID, result.get(0).getId());
-        verify(userDao).findAll();
     }
 
     @Test
@@ -180,9 +179,9 @@ class UserServiceImplTest {
         // When
         Optional<UserDto> result = testingInstance.getDtoById(USER_ID);
         // Then
+        verify(userDao).findById(USER_ID);
         assertTrue(result.isPresent());
         assertEquals(USER_ID, result.get().getId());
-        verify(userDao).findById(USER_ID);
     }
 
     @Test
@@ -193,9 +192,9 @@ class UserServiceImplTest {
         // When
         Optional<UserDto> result = testingInstance.getDtoByUsername(USERNAME);
         // Then
+        verify(userDao).findByUsername(USERNAME);
         assertTrue(result.isPresent());
         assertEquals(USERNAME, result.get().getUsername());
-        verify(userDao).findByUsername(USERNAME);
     }
 
     @Test
@@ -223,8 +222,8 @@ class UserServiceImplTest {
                 UsernameNotFoundException.class,
                 () -> testingInstance.loadUserByUsername(USERNAME)
         );
-        assertEquals(USER_NOT_FOUND, exception.getMessage());
         verify(userDao).findByUsername(USERNAME);
+        assertEquals(USER_NOT_FOUND, exception.getMessage());
     }
 
     @Test
@@ -282,8 +281,8 @@ class UserServiceImplTest {
         // When
         Optional<UserDto> result = testingInstance.getDtoById(USER_ID);
         // Then
-        assertTrue(result.isEmpty());
         verify(userDao).findById(USER_ID);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -293,8 +292,8 @@ class UserServiceImplTest {
         // When
         Optional<UserDto> result = testingInstance.getDtoByUsername(USERNAME);
         // Then
-        assertTrue(result.isEmpty());
         verify(userDao).findByUsername(USERNAME);
+        assertTrue(result.isEmpty());
     }
 
     @Test

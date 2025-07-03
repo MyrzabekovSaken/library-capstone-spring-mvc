@@ -34,6 +34,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private static final String ACTIVE = "ACTIVE";
     private static final String SQL_STATE = "23505";
     private static final String USERNAME_ALREADY_EXISTS = "Username already exists";
+    private static final String USER_IS_NOT_ACTIVE = "User is not active";
 
     private final UserDao userDao;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -60,6 +61,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = getUsername(username);
+
+        if (!user.getStatus().equals(ACTIVE)) {
+            throw new UsernameNotFoundException(USER_IS_NOT_ACTIVE);
+        }
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())

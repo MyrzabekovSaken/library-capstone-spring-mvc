@@ -1,9 +1,5 @@
 package com.library.app.model;
 
-import org.springframework.context.i18n.LocaleContextHolder;
-
-import java.util.ResourceBundle;
-
 /**
  * Enum representing the type of book order.
  */
